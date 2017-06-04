@@ -36,7 +36,7 @@
 </section>
 <section>
   <p>
-    I've worked on recommender systems at Lyst and Netflix
+    Worked on recommender systems at Lyst and Netflix.
   <p>
   <p>
     Author of <a href="https://github.com/lyst/lightfm">LightFM</a>, a recommender system library.
@@ -49,7 +49,7 @@
   <section id="slide-org3a7b97f">
     <h3 id="org3a7b97f">Recommender systems are an application of ML in production</h3>
     <p>
-      But they are sufficiently different from classification to require special treatment
+      But they are sufficiently different from classification to require special treatment.
     </p>
   </section>
 </section>
@@ -72,7 +72,7 @@
 </section>
 <section>
   <section id="slide-org7deeb15">
-    <h3 id="org7deeb15">Its easy to find a good baseline for classification</h3>
+    <h3 id="org7deeb15">It's easy to find a good baseline for classification</h3>
     <p>
       Some models will work better than others, but a random forest is probably a good default.
     </p>
@@ -94,11 +94,16 @@
   <section id="slide-org8318b87">
     <h3 id="org8318b87">But these could be virtually useless for your problem</h3>
     <p>
-      Do you have a huge number of items? Do new items matter more than old items?
+      Do you have a huge number of items?
     </p>
-
     <p>
-      Example: at Lyst, we have tens of millions of items, and new items matter more. Never know enough about the new items to use MF.
+      Do new items matter more than old items?
+    </p>
+  </section>
+  <section>
+    <p>
+      <h3>Example</h3>
+      At Lyst, we had tens of millions of items, and new items matter more. Never know enough about the new items to use MF.
     </p>
   </section>
 </section>
@@ -173,7 +178,7 @@
     </p>
 
     <p>
-      Precition@k, MRR, AUC, nDCG&#x2026;
+      Precision@k, MRR, AUC, nDCG&#x2026;
     </p>
   </section>
 </section>
@@ -370,7 +375,7 @@
     </section>
 
     <section>
-      This means that the model is continuously moving: need to have tools to monitor is health.
+      This means that the model is continuously moving: need to have tools to monitor its health.
     </section>
 </section>
 <section>
