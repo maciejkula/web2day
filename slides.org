@@ -1,0 +1,106 @@
+#+REVEAL_HLEVEL: 2
+#+OPTIONS: reveal_slide_number:nil
+
+* Recommender Systems in Production
+* Recommender systems are an application of ML in production
+  But they are sufficiently different from classification to require special treatment
+** This manifests itself in three areas
+   1. Model choice
+   2. Model evaluation
+   3. Engineering architecture
+* Model choice
+** Its easy to find a good baseline for classification
+   Some models will work better than others, but a random forest is probably a good default.
+** Not so in recommendations
+   There are a number of standard approaches that are widely used in the literature.
+
+   Example: matrix factorization, winner of the Netflix prize; or user-item space nearest neighbours.
+** But these could be virtually useless for your problem
+   Do you have a huge number of items? Do new items matter more than old items?
+
+   Example: at Lyst, we have tens of millions of items, and new items matter more. Never know enough about the new items to use MF.
+** Need to have a careful look at your problem
+   Are new items important to your users? You need to incorporate novelty.
+
+   Do your users return to continue what they were doing before? Make sure you give them recently viewed items or Continue Watching.
+
+   Do you have item features? Use content-based or hybrid models.
+
+   Make sure you know if popularity is important, and model it appropriately.
+** When in doubt, ensemble
+   Mix different models to cater to different user intentions.
+* Model evaluation
+** How do you know one model is better than another?
+   Normally, you'd fit some models offline and compute some offline metrics.
+** In recommendations, ranking metrics are key
+   Hold out some interactions, fit a model, and make sure the held out interactions are ranked as high as possible.
+
+   Precition@k, MRR, AUC, nDCG...
+** Still, recommender system evaluation is difficult
+   Some of the problems are common with other systems, but some are unique.
+** Is your metric correlated with what you care about?
+   Different customer engagement metrics: clicks vs favourites vs purchases
+
+   Does any of these uniquely correlate with what you want? Do you need to combine them? What is the right combination?
+
+   Targeting purchases isn't always the most effective way of optimizing your system for conversion (sparsity of data etc)
+
+   This extends to A/B test results.
+** Is the past an accurate predictor of the future?
+   What was popular a week ago may not be popular tomorrow.
+** Presentation bias
+   Peculiar to recommender systems.
+
+   Your training and evaluation data is biased by the effects of your existing system!
+
+   Highly recommender items more likely to be clicked, making them rank higher in any future system.
+
+   In the most extreme case, your metrics measure how well your new model tracks your old model.
+** Solutions
+   Inject randomness into your recommendations, use the data as an unbiased evaluation set.
+
+   Keep track of your system's decisions; discount interactions on highly ranked items (inverse propensity weighting, censored models, popularity-based negative sampling)
+
+   Design escape hatches into your system: giving users a way to explore indendently of your system gives you valuable unbiased data.
+* Engineering architecture
+** Classification paradigm
+   Train and evaluate model offline.
+   
+   Spin up a service that accepts features and returns a predictor.
+** Recommender systems are a bit more complicated
+   Both when it comes to fitting and prediction.
+** Prediction
+   Your system is supposed to construct a ranking: it'll have to make predictions on tens of thousands of items in any single call.
+
+   This will have to happen quickly. Latency kills the user experience.
+** Example: related items
+   Pick the most related items among millions.
+
+   Usually, this involves dot products in some high-dimensional latent space.
+** Architecture consequences
+   Representations have to be local to the computation. Pushing tens of megabytes of data over the wire is infeasible.
+
+   Have to use clever space partitioning schemes to bound the search space (and the latency)
+** Example: recommender for you
+   Recommend items to a user.
+
+   Two-step procedure: candidate generation and ranking.
+
+   In candidate generation, select and merge candidates from millions of possibilities. These come from your ANN subsystem, popularity, novelty and so on.
+
+   Score in the ranking phase.
+** Precompute can't always help you.
+   A lot of these applications have to happen online.
+
+   It helps to use the context of the interaction to help scoring (time of day, device type, and so on).
+
+   Crucial to update your representation of the user as they go about interacting with your system.
+
+   Example: YouTube recommendations adjust in near-real-time to your browsing behaviour.
+
+** Near-line fitting
+   Often, this means that you have online estimation as well as evaluation systems.
+
+   Sometimes the whole model is updated online; sometimes only new parameters are folded-in.
+
+   This means that the model is continuously moving: need to have tools to monitor is health.
